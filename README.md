@@ -1,7 +1,7 @@
 ICM7218 Library
 ====================
 
-This library to designed to interface with the Intersil/Renesas ICM7218A/B LED
+This library is designed to interface with the Intersil/Renesas ICM7218A/B LED
 driver chip. Note that there are several chips in the 72XX LED driver family,
 including chips from Maxim.
 These other chips provide similar capabilities; however, this library
@@ -30,11 +30,12 @@ Once you have created an ICM7218 object, the following methods can be
 used to control the LEDs:
 
     void print(char* s)
-  Sends the null-terminated character string s to the LED display.
+  Sends the null-terminated character string `s` to the LED display.
+
   A maximum of 8 characters are printed (not including decimal points),
   regardless of the actual length of the string.
   Invalid characters (not supported by the current character mode) are
-  displayed with a default character: '0' in HEXA mode or ' ' (space) in CODEB mode.
+  displayed with a default character: `'0'` (zero) in HEXA mode or `' '` (space) in CODEB mode.
   If the string is less than 8 characters in length, then the string is left-justified
   and right-padded with the relevant default character (space or zero).
 
@@ -42,13 +43,12 @@ used to control the LEDs:
   However, the 7218 will display them the same regardless of case.
 
     void setMode(CHAR_MODE);
-  Sets the character decode mode for the display. Three modes are supported:
+  Sets the character decode mode for the display. `CHAR_MODE` is one of the following:
 
-- ICM7218::HEXA - Supports hexadecimal digits 0-9 and A-F, plus decimal points
-- ICM7218::CODEB - Supports 0-9, H, E, L, P, - (hyphen), ' ' (space), plus decimal points (default mode)
-- ICM7218::DIRECT - Direct control of LED segments. See [datasheet](https://www.intersil.com/content/dam/Intersil/documents/icm7/icm7218.pdf)
-for bit-to-segment mapping.
-
+`ICM7218::HEXA` - Supports hexadecimal digits 0-9 and A-F, plus decimal points  
+`ICM7218::CODEB` - Supports 0-9, H, E, L, P, - (hyphen), ' ' (space), plus decimal points (default mode)  
+`ICM7218::DIRECT` - Direct control of LED segments. See [datasheet](https://www.intersil.com/content/dam/Intersil/documents/icm7/icm7218.pdf)
+for bit-to-segment mapping.  
 
     void shutdown();
   Turns off the display and puts the chip in low-power mode.
@@ -77,7 +77,7 @@ have the display enabled, wire the pins as follows:
       ID5 (DECODE)      -> GND
       ID4 (SHUTDOWN)    -> +5V
 
-When invoking the constructor, use the value "ICM7218::NO_PIN" for any pins
+When invoking the constructor, use the value `ICM7218::NO_PIN` for any pins
 that are hardwired. Using the above example:
 
       ICM7218 myLED(2, 3, 4, 5, ICM7218::NO_PIN, ICM7218::NO_PIN,

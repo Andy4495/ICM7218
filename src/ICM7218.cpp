@@ -1,6 +1,6 @@
 /* Library to interface with Intersil/Renesas ICM7218A/B LED driver chip.
-   Note that there are several chips in the ISM7218 family, including
-   clone chips from Maxim.
+   Note that there are several chips in the 72xx family, including
+   chips from Maxim.
    While these other chips provide similar capabilities, this library
    was specifically designed for the Intersil ISM7218A/B variants.
    This library may require modifications to function properly with other
