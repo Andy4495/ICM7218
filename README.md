@@ -29,7 +29,7 @@ used to control the LEDs:
   A maximum of 8 characters are printed (not including decimal points),
   regardless of the actual length of the string. Invalid characters (not supported by the current character mode) are displayed with a default character: `'0'` (zero) in HEXA mode or `' '` (space) in CODEB mode. If the string is less than 8 characters in length, then the string is left-justified and right-padded with the relevant default character (space or zero).
 
-  Either upper- or lower-case alpha characters may be used in the string. However, the 7218 will display them the same regardless of case.
+  Either upper- or lower-case alpha characters may be used in the string.
 
     void setMode(CHAR_MODE);
   Sets the character decode mode for the display. `CHAR_MODE` is one of the following:
@@ -122,7 +122,7 @@ Reducing RAM Usage
 ------------------
 It is possible to save 192 bytes of RAM by disabling the `convertToSegments()` functionality. Add the following `#define` before including `ICM7218.h` in your sketch:
 
-    #define NO_SEGMENT_CONVERSION
+    #define ICM7218_NO_SEGMENT_MAP
 
 
 References
