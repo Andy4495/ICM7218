@@ -85,17 +85,17 @@ The ASCII to 7-segment mapping performed by `convertToSegments()` is shown in th
 * ASCII 0x78 - 0x7F `  x y z { | } ~ DEL` ![0x78-0x7F][78]
 
 [20]: jpg/ascii20-27.jpg "ASCII 0x20-0x27"
-[28]: jpg/ascii28-2f.jpg "ASCII 0x28-0x2F"
+[28]: jpg/ascii28-2F.jpg "ASCII 0x28-0x2F"
 [30]: jpg/ascii30-37.jpg "ASCII 0x30-0x37"
-[38]: jpg/ascii38-3f.jpg "ASCII 0x38-0x3F"
+[38]: jpg/ascii38-3F.jpg "ASCII 0x38-0x3F"
 [40]: jpg/ascii40-47.jpg "ASCII 0x40-0x47"
-[48]: jpg/ascii48-4f.jpg "ASCII 0x48-0x4F"
+[48]: jpg/ascii48-4F.jpg "ASCII 0x48-0x4F"
 [50]: jpg/ascii50-57.jpg "ASCII 0x50-0x57"
-[58]: jpg/ascii58-5f.jpg "ASCII 0x58-0x5F"
+[58]: jpg/ascii58-5F.jpg "ASCII 0x58-0x5F"
 [60]: jpg/ascii60-67.jpg "ASCII 0x60-0x67"
-[68]: jpg/ascii68-6f.jpg "ASCII 0x60-0x6F"
+[68]: jpg/ascii68-6F.jpg "ASCII 0x60-0x6F"
 [70]: jpg/ascii70-77.jpg "ASCII 0x70-0x77"
-[78]: jpg/ascii78-7f.jpg "ASCII 0x78-0x7F"
+[78]: jpg/ascii78-7F.jpg "ASCII 0x78-0x7F"
 
 
 
