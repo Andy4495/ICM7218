@@ -13,6 +13,7 @@
 */
 /* Version History
    1.0.0    02/12/2018  A.T.   Original
+   1.1.0    02/27/2018  A.T.   Added support for ascii to segment mapping
 */
 
 /* Constructor:
@@ -202,6 +203,57 @@ void ICM7218::wakeup() {
   /// Send control word, no data coming, with /SHUTDOWN inactive
   send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
 }
+
+#ifdef ICM7218_SEGMENT_MAP
+void ICM7218::convertToSegments(char* s){
+  int i = 0;
+  int outindex = 0;
+  int EOS = 0;    // end-of-string flag
+  /// TO DO:
+  ///  - Check for end-of-string before element 8
+  ///  - Check for decimal point
+  while (outindex < 8) {
+      if (EOS == 0) {
+        switch (s[i]) {
+          case '.':
+            if (outindex != 0)
+              s[outindex-1] = s[outindex-1] & ~DP;             // Add decimal point
+            i++;
+            break;
+          case '\0':   // End-of-string so fill with blanks
+            s[outindex] = 0;
+            i++;
+            outindex++;
+            EOS = 1;   // Turn on end-of-string flag
+            break;
+          default:
+            // First 32 bytes ascii characters are non-printable, so
+            // automatically display blank without defining in table
+            if (s[i] < 32)
+              s[outindex] = 0 | DP;
+            else
+            // Strip off MSB of input character since we are using 7-bit ascii
+            // and set msb of output char to turn off decimal point
+              s[outindex] = segment_map[(s[i] & 0x7f) - 32] | DP;
+            i++;
+            outindex++;
+            break;
+        }
+      }
+      else {        // Fill the remaining string with blank characters
+        s[outindex] = 0 | DP;
+        outindex++;
+      }
+  }
+}
+#endif
+
+#ifdef ICM7218_SEGMENT_MAP
+char ICM7218::convertToSegments(char c) {
+  if (c < 32) return 0 | DP;    // Non-printable control characters
+  else return segment_map[(c & 0x7f) - 32] | DP;
+}
+#endif
 
 void ICM7218::send_byte(byte c) {
   // Change mode to DATA
