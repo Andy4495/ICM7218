@@ -1,13 +1,17 @@
 ICM7218 Library
 ====================
 
-This library is designed to interface with the Intersil/Renesas ICM7218A/B LED driver chip. Note that there are several chips in the 72XX LED driver family, including chips from Maxim. These other chips provide similar capabilities; however, this library was specifically designed for the Intersil/Renesas ISM7218A/B variants.
+This library is designed to interface with the Intersil/Renesas ICM7218A/B and ICM7228A/B LED driver chips. Note that there are several chips in the 72XX LED driver family, including chips from Maxim. These other chips provide similar capabilities; however, this library was specifically designed for the Intersil/Renesas ICM7218A/B and ICM7228A/B variants.
 
-Support for other LED driver chips may be added in the future.
+On the ICM7228B chip, the library only supports "Sequential 8-Digit Update" mode. This means that the ICM7228 is functionally equivalent to the ICM7218 when using this library.
+
+Support for other LED driver chips and additional control modes for ICM7218 may be added in the future.
 
 The I/O interface requires 10 digital output pins for full support of
 all functionality. However, it is possible to use as few as 6 output
 pins if only a single character set is needed. See "Reducing Output Pin Usage" [below][1] for more info.
+
+While the ICM7228 uses a 5V supply voltage, its data input lines are 3.3 V compatible. This means that it is possible to interface the ICM7228 with 3.3 V devices including MSP430 and 3.3V Arduino controllers without the need for level shifters. 
 
 [1]: #reducing-output-pin-usage
 
