@@ -14,6 +14,10 @@
 /* Version History
    1.0.0    02/12/2018  A.T.   Original
    1.1.0    02/27/2018  A.T.   Added ascii to segment mapping table
+   1.2.0    08/07/2018  A.T.   Changed names of shutdown() and wakeup() to 
+                               displayShutdown() and displayWakeup()
+                               Moved segment_map out of class definition and
+                               renamed to ICM7218_segment_map
 */
 #ifndef ICM7218_LIBRARY
 #define ICM7218_LIBRARY
@@ -34,8 +38,8 @@ public:
           byte D7, byte mode_pin, byte write_pin);
   void setMode(CHAR_MODE);
   void print(const char*);
-  void shutdown();
-  void wakeup();
+  void displayShutdown();
+  void displayWakeup();
 #ifdef ICM7218_SEGMENT_MAP
   void convertToSegments(char*);
   char convertToSegments(char);
@@ -51,12 +55,14 @@ private:
   int power_state;
   void send_byte(byte b);
   void send_control(int dc, int hc, int decode, int sd);
+};
+
 #ifdef ICM7218_SEGMENT_MAP
   // Conversion of letters to LED segments.
   // 0x00 is a blank character and is used for unsupported values.
   // Save memory by not defining first 32 ascii characters, since they
   // are all control characters
-  const unsigned char segment_map[96]  = {
+  const unsigned char ICM7218_segment_map[96]  = {
   //  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 00: Control characters
   //  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 08: Control characters
   //  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10: Control characters
@@ -75,5 +81,5 @@ private:
     0x3a, 0x37, 0x7d, 0x4d, 0x08, 0x55, 0x66, 0x00  // 78:   x y z { | } ~ DEL
   };
 #endif
-};
+
 #endif

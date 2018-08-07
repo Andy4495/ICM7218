@@ -4,6 +4,7 @@
 // This sketch displays strings received over serial port
 //
 // 1.0.0    03/09/2018  A.T.   Original
+// 1.2.0    08/07/2018  A.T.   Raname display() and wakeup() methods
 //
 // First two bytes received should be a "mode digit" followed by a colon
 // "mode digit" can be one of:
@@ -122,7 +123,7 @@ void process_data (char * data, int size)
     case 's':
       if (data[1] == ':') {
         power_command = 4;
-        myLED.shutdown();
+        myLED.displayShutdown();
       }
       break;
 
@@ -131,7 +132,7 @@ void process_data (char * data, int size)
     case 'w':
       if (data[1] == ':') {
         power_command = 5;
-        myLED.wakeup();
+        myLED.displayWakeup();
       }
       break;
 
@@ -158,7 +159,7 @@ void process_data (char * data, int size)
     default:
       break;
   }
-  
+
   if (strncmp(data, "6:", 2) != 0) {         // Only print to LED if not Cylon mode
     if (power_command == 0) {
       myLED.setMode(mode);
@@ -194,7 +195,7 @@ void process_data (char * data, int size)
 void processIncomingByte (const byte inByte)
 {
   static unsigned int input_pos = 0;
-  int input_size; 
+  int input_size;
 
   switch (inByte)
   {

@@ -3,6 +3,7 @@
 //
 // 1.0.0    02/27/2018  A.T.   Original
 // 1.1.0    03/01/2018  A.T.   Add ASCII to segment mapping in DIRECT mode
+// 1.2.0    08/07/2018  A.T.   Raname display() and wakeup() methods
 
 
 #include <ICM7218.h>
@@ -43,11 +44,11 @@ void loop() {
   delay(5000);
 
   // Shutdown mode turns off the display and puts the chip in a low-power mode
-  myLED.shutdown();
+  myLED.displayShutdown();
   Serial.println("Shutdown 2 seconds");
   delay(2000);
   // Wakeup turns the display back on
-  myLED.wakeup();
+  myLED.displayWakeup();
   Serial.println("Wake up 2 seconds with same display as previous.");
   delay(2000);
 

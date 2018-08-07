@@ -41,10 +41,10 @@ used to control the LEDs:
 [2]: https://www.intersil.com/content/dam/Intersil/documents/icm7/icm7218.pdf
 [3]: #using-direct-mode
 
-    void shutdown();
+    void displayShutdown();
   Turns off the display and puts the chip in low-power mode. The chip will accept new characters while in shutdown mode, so it is possible to use the print() method to "pre-display" a new string before calling wakeup().
 
-    void wakeup();
+    void displayWakeup();
   Brings the chip out of low-power mode and turns the display on. This is the default state when creating an ICM7218 object.
 
     void covertToSegments(char* s);

@@ -14,6 +14,9 @@
 /* Version History
    1.0.0    02/12/2018  A.T.   Original
    1.1.0    02/27/2018  A.T.   Added support for ascii to segment mapping
+   1.2.0    08/07/2018  A.T.   Changed names of shutdown() and wakeup() to
+                               displayShutdown() and displayWakeup()
+                               Renamed segment_map to ICM7218_segment_map
 */
 
 /* Constructor:
@@ -192,13 +195,13 @@ void ICM7218::print(const char* s) {
   }
 }
 
-void ICM7218::shutdown() {
+void ICM7218::displayShutdown() {
   power_state = SHUTDOWN;
   // Send control word, no data coming, with /SHUTDOWN active
   send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
 }
 
-void ICM7218::wakeup() {
+void ICM7218::displayWakeup() {
   power_state = WAKEUP;
   /// Send control word, no data coming, with /SHUTDOWN inactive
   send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
@@ -234,7 +237,7 @@ void ICM7218::convertToSegments(char* s){
             else
             // Strip off MSB of input character since we are using 7-bit ascii
             // and set msb of output char to turn off decimal point
-              s[outindex] = segment_map[(s[i] & 0x7f) - 32] | DP;
+              s[outindex] = ICM7218_segment_map[(s[i] & 0x7f) - 32] | DP;
             i++;
             outindex++;
             break;
@@ -251,7 +254,7 @@ void ICM7218::convertToSegments(char* s){
 #ifdef ICM7218_SEGMENT_MAP
 char ICM7218::convertToSegments(char c) {
   if (c < 32) return 0 | DP;    // Non-printable control characters
-  else return segment_map[(c & 0x7f) - 32] | DP;
+  else return ICM7218_segment_map[(c & 0x7f) - 32] | DP;
 }
 #endif
 
