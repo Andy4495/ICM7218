@@ -5,7 +5,7 @@
    was specifically designed for the Intersil ISM7218A/B variants.
    This library may require modifications to function properly with other
    chips.
-   https://gitlab.com/Andy4495/ICM7218
+   https://github.com/Andy4495/ICM7218
 
    Interface requires up to 12 digital out pins for full support of
    all functionality. However, it is possible to use as few as 6 output
@@ -14,7 +14,7 @@
 /* Version History
    1.0.0    02/12/2018  A.T.   Original
    1.1.0    02/27/2018  A.T.   Added ascii to segment mapping table
-   1.2.0    08/07/2018  A.T.   Changed names of shutdown() and wakeup() to 
+   1.2.0    08/07/2018  A.T.   Changed names of shutdown() and wakeup() to
                                displayShutdown() and displayWakeup()
                                Moved segment_map out of class definition and
                                renamed to ICM7218_segment_map

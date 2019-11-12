@@ -5,7 +5,7 @@
    was specifically designed for the Intersil ISM7218A/B variants.
    This library may require modifications to function properly with other
    chips.
-   https://gitlab.com/Andy4495/ICM7218
+   https://github.com/Andy4495/ICM7218
 
    Interface requires up to 12 digital out pins for full support of
    all functionality. However, it is possible to use as few as 6 output

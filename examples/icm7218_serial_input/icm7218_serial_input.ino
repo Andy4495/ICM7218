@@ -1,5 +1,5 @@
 // Example program for ICM7218 library
-// https://gitlab.com/Andy4495/ICM7218
+// https://github.com/Andy4495/ICM7218
 //
 // This sketch displays strings received over serial port
 //
