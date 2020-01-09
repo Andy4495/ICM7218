@@ -11,7 +11,7 @@ The I/O interface requires 10 digital output pins for full support of
 all functionality. However, it is possible to use as few as 6 output
 pins if only a single character set is needed. See "Reducing Output Pin Usage" [below][1] for more info.
 
-While the ICM7228 uses a 5V supply voltage, its data input lines are 3.3 V compatible. This means that it is possible to interface the ICM7228 with 3.3 V devices including MSP430 and 3.3V Arduino controllers without the need for level shifters. 
+While the ICM7228 uses a 5V supply voltage, its data input lines are 3.3 V compatible. This means that it is possible to interface the ICM7228 with 3.3 V devices including MSP430 and 3.3V Arduino controllers without the need for level shifters.
 
 [1]: #reducing-output-pin-usage
 
@@ -88,18 +88,18 @@ The ASCII to 7-segment mapping performed by `convertToSegments()` is shown in th
 * ASCII 0x70 - 0x77 `  p q r s t u v w` ![0x70-0x77][70]
 * ASCII 0x78 - 0x7F `  x y z { | } ~ DEL` ![0x78-0x7F][78]
 
-[20]: jpg/ascii20-27.jpg "ASCII 0x20-0x27"
-[28]: jpg/ascii28-2F.jpg "ASCII 0x28-0x2F"
-[30]: jpg/ascii30-37.jpg "ASCII 0x30-0x37"
-[38]: jpg/ascii38-3F.jpg "ASCII 0x38-0x3F"
-[40]: jpg/ascii40-47.jpg "ASCII 0x40-0x47"
-[48]: jpg/ascii48-4F.jpg "ASCII 0x48-0x4F"
-[50]: jpg/ascii50-57.jpg "ASCII 0x50-0x57"
-[58]: jpg/ascii58-5F.jpg "ASCII 0x58-0x5F"
-[60]: jpg/ascii60-67.jpg "ASCII 0x60-0x67"
-[68]: jpg/ascii68-6F.jpg "ASCII 0x60-0x6F"
-[70]: jpg/ascii70-77.jpg "ASCII 0x70-0x77"
-[78]: jpg/ascii78-7F.jpg "ASCII 0x78-0x7F"
+[20]: extras/jpg/ascii20-27.jpg "ASCII 0x20-0x27"
+[28]: extras/jpg/ascii28-2F.jpg "ASCII 0x28-0x2F"
+[30]: extras/jpg/ascii30-37.jpg "ASCII 0x30-0x37"
+[38]: extras/jpg/ascii38-3F.jpg "ASCII 0x38-0x3F"
+[40]: extras/jpg/ascii40-47.jpg "ASCII 0x40-0x47"
+[48]: extras/jpg/ascii48-4F.jpg "ASCII 0x48-0x4F"
+[50]: extras/jpg/ascii50-57.jpg "ASCII 0x50-0x57"
+[58]: extras/jpg/ascii58-5F.jpg "ASCII 0x58-0x5F"
+[60]: extras/jpg/ascii60-67.jpg "ASCII 0x60-0x67"
+[68]: extras/jpg/ascii68-6F.jpg "ASCII 0x60-0x6F"
+[70]: extras/jpg/ascii70-77.jpg "ASCII 0x70-0x77"
+[78]: extras/jpg/ascii78-7F.jpg "ASCII 0x78-0x7F"
 
 
 
