@@ -74,19 +74,19 @@ To convert just one character, use `convertToSegments(char c)`, which returns a 
 
 The ASCII to 7-segment mapping performed by `convertToSegments()` is shown in the following images. Note that the 7-segment display does not allow an accurate rendering of all ASCII characters and symbols. Also note that some values are rendered as a blank character, represented by a green box around the LED digit.
 
-* ASCII 0x00 - 0x1F -> Blank character (these are all non-printing ASCII control characters)
-* ASCII 0x20 - 0x27 `spc ! " # $ % & '` ![0x20-0x27][20]
-* ASCII 0x28 - 0x2F `  ( ) * + , - . /` ![0x28-0x2F][28]
-* ASCII 0x30 - 0x37 `  0 1 2 3 4 5 6 7` ![0x30-0x37][30]
-* ASCII 0x38 - 0x3F `  8 9 : ; < = > ?` ![0x38-0x3F][38]
-* ASCII 0x40 - 0x47 `  @ A B C D E F G` ![0x40-0x47][40]
-* ASCII 0x48 - 0x4F `  H I J K L M N O` ![0x48-0x4F][48]
-* ASCII 0x50 - 0x57 `  P Q R S T U V W` ![0x50-0x57][50]
-* ASCII 0x58 - 0x5F `  X Y Z [ \ ] ^ _` ![0x58-0x5F][58]
-* ASCII 0x60 - 0x67 `` ` a b c d e f g`` ![0x60-0x67][60]
-* ASCII 0x68 - 0x6F `  h i j k l m n o` ![0x68-0x6F][68]
-* ASCII 0x70 - 0x77 `  p q r s t u v w` ![0x70-0x77][70]
-* ASCII 0x78 - 0x7F `  x y z { | } ~ DEL` ![0x78-0x7F][78]
+* ASCII 0x00 - 0x1F: Blank character (these are all non-printing ASCII control characters)
+* ASCII 0x20 - 0x27: `spc ! " # $ % & '` ![0x20-0x27][20]
+* ASCII 0x28 - 0x2F: `( ) * + , - . /` ![0x28-0x2F][28]
+* ASCII 0x30 - 0x37: `0 1 2 3 4 5 6 7` ![0x30-0x37][30]
+* ASCII 0x38 - 0x3F: `8 9 : ; < = > ?` ![0x38-0x3F][38]
+* ASCII 0x40 - 0x47: `@ A B C D E F G` ![0x40-0x47][40]
+* ASCII 0x48 - 0x4F: `H I J K L M N O` ![0x48-0x4F][48]
+* ASCII 0x50 - 0x57: `P Q R S T U V W` ![0x50-0x57][50]
+* ASCII 0x58 - 0x5F: `X Y Z [ \ ] ^ _` ![0x58-0x5F][58]
+* ASCII 0x60 - 0x67: `` ` a b c d e f g`` ![0x60-0x67][60]
+* ASCII 0x68 - 0x6F: `h i j k l m n o` ![0x68-0x6F][68]
+* ASCII 0x70 - 0x77: `p q r s t u v w` ![0x70-0x77][70]
+* ASCII 0x78 - 0x7F: `x y z { | } ~ DEL` ![0x78-0x7F][78]
 
 [20]: extras/jpg/ascii20-27.jpg "ASCII 0x20-0x27"
 [28]: extras/jpg/ascii28-2F.jpg "ASCII 0x28-0x2F"
@@ -100,8 +100,6 @@ The ASCII to 7-segment mapping performed by `convertToSegments()` is shown in th
 [68]: extras/jpg/ascii68-6F.jpg "ASCII 0x60-0x6F"
 [70]: extras/jpg/ascii70-77.jpg "ASCII 0x70-0x77"
 [78]: extras/jpg/ascii78-7F.jpg "ASCII 0x78-0x7F"
-
-
 
 Reducing Output Pin Usage
 -------------------------
@@ -124,18 +122,21 @@ When invoking the constructor, use the value `ICM7218::NO_PIN` for any pins that
 
 Reducing RAM Usage
 ------------------
+
 It is possible to save 192 bytes of RAM by disabling the `convertToSegments()` functionality. Add the following `#define` before including `ICM7218.h` in your sketch:
 
     #define ICM7218_NO_SEGMENT_MAP
 
-
 References
 ----------
-+ [ICM7218 datasheet](https://www.intersil.com/content/dam/Intersil/documents/icm7/icm7218.pdf)
+
+* [ICM7218 datasheet](https://www.intersil.com/content/dam/Intersil/documents/icm7/icm7218.pdf)
 
 License
 -------
+
 The software and other files in this repository are released under what is commonly called the [MIT License][100]. See the file [`LICENSE.txt`][101] in this repository.
 
 [100]: https://choosealicense.com/licenses/mit/
 [101]: ./LICENSE.txt
+[200]: https://github.com/Andy4495/ICM7218
