@@ -1,5 +1,7 @@
-ICM7218 Library
-====================
+# ICM7218 Library
+
+[![Arduino Compile Sketches](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-compile-sketches.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-compile-sketches.yml)
+[![Check Markdown Links](https://github.com/Andy4495/ICM7218/actions/workflows/CheckMarkdownLinks.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/CheckMarkdownLinks.yml)
 
 This library is designed to interface with the Intersil/Renesas ICM7218A/B and ICM7228A/B LED driver chips. Note that there are several chips in the 72XX LED driver family, including chips from Maxim. These other chips provide similar capabilities; however, this library was specifically designed for the Intersil/Renesas ICM7218A/B and ICM7228A/B variants.
 
@@ -15,8 +17,7 @@ While the ICM7228 uses a 5V supply voltage, its data input lines are 3.3 V compa
 
 [1]: #reducing-output-pin-usage
 
-Usage
------
+## Usage
 
 Use the constructor to set up the pins used to interface with the 7218 chip. A total of 10 output pins are required. For example,
 
@@ -57,8 +58,7 @@ used to control the LEDs:
     char convertToSegments(char c);
   Converts single character `c` (ASCII) and returns a bit-mapped segment value used in DIRECT mode. See [below][3] for more details.
 
-Using Direct Mode
------------------
+## Using Direct Mode
 
 DIRECT mode allows direct control of each of the LED segments as opposed to the HEXA or CODEB modes which convert a numeric value into a corresponding LED digit or letter.
 
@@ -101,8 +101,7 @@ The ASCII to 7-segment mapping performed by `convertToSegments()` is shown in th
 [70]: extras/jpg/ascii70-77.jpg "ASCII 0x70-0x77"
 [78]: extras/jpg/ascii78-7F.jpg "ASCII 0x78-0x7F"
 
-Reducing Output Pin Usage
--------------------------
+## Reducing Output Pin Usage
 
 It is possible to save up to four output pins by hardwiring some or all of the pins ID4 - ID7 high or low to hardcode the character/segment decode mode and shutdown mode.
 
@@ -120,20 +119,17 @@ When invoking the constructor, use the value `ICM7218::NO_PIN` for any pins that
       ICM7218 myLED(2, 3, 4, 5, ICM7218::NO_PIN, ICM7218::NO_PIN,
                     ICM7218::NO_PIN, ICM7218::NO_PIN, 14, 15);
 
-Reducing RAM Usage
-------------------
+## Reducing RAM Usage
 
 It is possible to save 192 bytes of RAM by disabling the `convertToSegments()` functionality. Add the following `#define` before including `ICM7218.h` in your sketch:
 
     #define ICM7218_NO_SEGMENT_MAP
 
-References
-----------
+## References
 
 * [ICM7218 datasheet](https://www.intersil.com/content/dam/Intersil/documents/icm7/icm7218.pdf)
 
-License
--------
+## License
 
 The software and other files in this repository are released under what is commonly called the [MIT License][100]. See the file [`LICENSE.txt`][101] in this repository.
 
