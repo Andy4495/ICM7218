@@ -2,6 +2,7 @@
 
 [![Arduino Compile Sketches](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-compile-sketches.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-compile-sketches.yml)
 [![Check Markdown Links](https://github.com/Andy4495/ICM7218/actions/workflows/CheckMarkdownLinks.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/CheckMarkdownLinks.yml)
+[![Arduino Lint](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-lint.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-lint.yml)
 
 This library is designed to interface with the Intersil/Renesas ICM7218A/B and ICM7228A/B LED driver chips. Note that there are several chips in the 72XX LED driver family, including chips from Maxim. These other chips provide similar capabilities; however, this library was specifically designed for the Intersil/Renesas ICM7218A/B and ICM7228A/B variants.
 
