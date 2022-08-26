@@ -17,7 +17,10 @@
    1.2.0    08/07/2018  A.T.   Changed names of shutdown() and wakeup() to
                                displayShutdown() and displayWakeup()
                                Renamed segment_map to ICM7218_segment_map
+   1.3.0    08/24/2022  Andy4495 Add methods to simplify usage
 */
+
+#include "ICM7218.h"
 
 /* Constructor:
       D0 - D3   : digital output data pins. D0 is least significant bit.
@@ -32,8 +35,6 @@
       mode_pin  : digital output pin for MODE signal
       RF_pin    : digital output pin for /WRITE signal
 */
-#include "ICM7218.h"
-
 ICM7218::ICM7218(byte D0_pin, byte D1_pin, byte D2_pin, byte D3_pin,
                       byte D4_pin, byte D5_pin, byte D6_pin, byte D7_pin,
                       byte mode_pin, byte write_pin)
@@ -66,7 +67,22 @@ ICM7218::ICM7218(byte D0_pin, byte D1_pin, byte D2_pin, byte D3_pin,
 
   mode = CODEB;            // Default mode is CODEB decode until changed with setMode()
   power_state = WAKEUP;    // Default power state is active until changed with shutdown()
+  ram_bank_select = RAM_BANK_A;   // Only useful on ICM7228
 
+}
+
+byte& ICM7218::operator [] (byte index) {
+  if (index >= MAX_DIGITS) index = MAX_DIGITS - 1;
+  return display_array[index];
+}
+
+byte ICM7218::operator [] (byte index) const {
+  if (index >= MAX_DIGITS) index = MAX_DIGITS - 1;
+  return display_array[index];
+}
+
+void ICM7218::operator= (const char * s) {
+  memcpy(display_array, s, MAX_DIGITS);
 }
 
 void ICM7218::setMode(CHAR_MODE m) {
@@ -97,13 +113,13 @@ void ICM7218::setMode(CHAR_MODE m) {
 }
 
 void ICM7218::print(const char* s) {
-  byte outbuf[9]; // Extra byte in case there is a leading decimal point (which does not get displayed)
-  int index = 8;
+  byte outbuf[MAX_DIGITS + 1]; // Extra byte in case there is a leading decimal point (which does not get displayed)
+  int index = MAX_DIGITS;
   int i = 0;
 
     switch (mode) {
       case HEXA:
-        memset(outbuf, 0 | DP, 9); // Initialize to default characters (0)
+        memset(outbuf, 0 | DP, MAX_DIGITS + 1); // Initialize to default characters (0)
         while (index > 0) {
           switch (s[i]) {
               case '0': case '1': case '2': case '3':  case '4':
@@ -133,7 +149,7 @@ void ICM7218::print(const char* s) {
         break;
 
     case CODEB:
-      memset(outbuf, 15 | DP, 9); // Initialize to default characters (<space>)
+      memset(outbuf, 15 | DP, MAX_DIGITS + 1); // Initialize to default characters (<space>)
       while (index > 0) {
         switch (s[i]) {
             case '0':  case '1': case '2': case '3': case '4':
@@ -175,25 +191,103 @@ void ICM7218::print(const char* s) {
       break;
 
     case DIRECT:
-      memset(outbuf, 0 | DP, 9); // Initialize to default characters (0)
-      for (i = 0; i < 8; i++) {
-        if (s[i] != '\0') outbuf[7-i] = s[i];  // Flip the bytes around MSB<->LSB
-        else break;  // Exit for loop once we hit end of string
+      memset(outbuf, 0 | DP, MAX_DIGITS + 1); // Initialize to default characters (0)
+      for (i = 0; i < MAX_DIGITS; i++) {
+        // Previous versions of this library stopped when '\0' was detected
+        // However, '\0' is a valid value in DIRECT mode, so we should process it
+        // Since this is a read-only operation, going beyond end of array will
+        // not corrupt memory.
+        outbuf[MAX_DIGITS - 1 - i] = s[i];  // Flip the bytes around MSB<->LSB
       }
       break;
 
-    default: // Send all dashes for invalid mode
-      for (i = 0; i < 8; i++)
-        outbuf[i] = 10;
+    default: // Send all zeroes for invalid mode. THIS SHOULD NEVER HAPPEN!
+      for (i = 0; i < MAX_DIGITS; i++) 
+        outbuf[i] = 0;
       break;
   }
   // Set the mode
   send_control(DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
   // Send the data
-  for (i = 0; i < 8; i++) {
+  for (i = 0; i < MAX_DIGITS; i++) {
     send_byte(outbuf[i]);
+    // Copy the data sent to display into the object's internal storage
+    display_array[MAX_DIGITS - i - 1] = outbuf[i];
   }
-}
+} // print(const char*)
+
+void ICM7218::print() {
+  byte display_digit;
+  // Send control byte to start the transfer
+  send_control(DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
+  // Send the data bytes in reverse order
+  for (int i = MAX_DIGITS - 1; i >= 0 ; i--) {
+    switch (mode) {
+      case HEXA:
+        switch (display_array[i]) {
+          case '0': case '1': case '2': case '3':  case '4':
+          case '5': case '6': case '7': case '8':  case '9':
+            display_digit = (display_array[i] - '0' ) | DP;
+            break;
+          case 'A':  case 'B': case 'C': case 'D': case 'E': case 'F':
+            display_digit = (display_array[i] - 'A' + 10) | DP;
+            break;
+          case 'a':  case 'b': case 'c': case 'd': case 'e': case 'f':
+            display_digit = (display_array[i] - 'a' + 10) | DP;
+            break;
+          default:        // Invalid character, use default character (0)
+            display_digit = 0 | DP;
+            break;
+        }
+        break; 
+      case CODEB:
+        switch (display_array[i]) {
+          case '0':  case '1': case '2': case '3': case '4':
+          case '5':  case '6': case '7': case '8': case '9':
+            display_digit = (display_array[i] - '0' ) | DP;
+            break;
+          case 'E':  case 'e':
+            display_digit = 11 | DP;
+            break;
+          case 'H': case 'h':
+            display_digit = 12 | DP;
+            break;
+          case 'L': case 'l':
+            display_digit = 13 | DP;
+            break;
+          case 'P': case 'p':
+            display_digit = 14 | DP;
+            break;
+          case '-':
+            display_digit = 10 | DP;
+            break;
+          case ' ':
+            display_digit = 15 | DP;
+            break;
+          default:       // Invalid character printed as a blank
+            display_digit = 15 | DP;
+            break;
+        }
+        break;
+      case DIRECT:
+        display_digit = display_array[i];
+        break;
+      default: // Send all 0's if invalid mode. This should never happen!
+        display_digit = 0;
+        break; 
+    }
+    send_byte(display_digit);
+  }
+}  // print()
+
+// For use with ICM7228 Single Digit Update mode
+void ICM7218::print(char c, byte pos) {
+  if (pos > MAX_DIGITS - 1) pos = MAX_DIGITS - 1;
+  send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state, ram_bank_select, pos);
+  send_byte(c);
+  display_array[pos] = c;
+}  // print(char c, int pos)
+
 
 void ICM7218::displayShutdown() {
   power_state = SHUTDOWN;
@@ -208,14 +302,16 @@ void ICM7218::displayWakeup() {
 }
 
 #ifdef ICM7218_SEGMENT_MAP
+/* Converts the ASCII character string s into the segment format used in DIRECT mode
+   s is modified in place and must be at least 8 bytes long.    
+*/
 void ICM7218::convertToSegments(char* s){
   int i = 0;
   int outindex = 0;
   int EOS = 0;    // end-of-string flag
   /// TO DO:
-  ///  - Check for end-of-string before element 8
-  ///  - Check for decimal point
-  while (outindex < 8) {
+  ///  - Check for decimal point on last character
+  while (outindex < MAX_DIGITS) {
       if (EOS == 0) {
         switch (s[i]) {
           case '.':
@@ -252,9 +348,33 @@ void ICM7218::convertToSegments(char* s){
 #endif
 
 #ifdef ICM7218_SEGMENT_MAP
+/* Converts the ASCII character c the segment format used in DIRECT mode
+*/
 char ICM7218::convertToSegments(char c) {
   if (c < 32) return 0 | DP;    // Non-printable control characters
   else return ICM7218_segment_map[(c & 0x7f) - 32] | DP;
+}
+#endif
+
+#ifdef ICM7218_SEGMENT_MAP
+/* Converts the ASCII character string stored in the object 
+   into the segment format used in DIRECT mode
+   The display object string is modified in place.   
+   Display decimal points are not supported by this function since
+   we are limited to the internal 8-byte storage
+   Decimals can be added after calling this function by clearing
+   bit 7 on the relevant digits.  
+*/
+void ICM7218::convertToSegments() {
+  int i;
+  for(i = 0; i < MAX_DIGITS; i++) {
+    if (display_array[i] < 32)
+      display_array[i] = 0 | DP;
+    else
+    // Strip off MSB of input character since we are using 7-bit ascii
+    // and set msb of output char to turn off decimal point
+      display_array[i] = ICM7218_segment_map[(display_array[i] & 0x7f) - 32] | DP;
+  }
 }
 #endif
 
@@ -277,12 +397,16 @@ void ICM7218::send_byte(byte c) {
   digitalWrite(write_out, HIGH);
 }
 
-void ICM7218::send_control(int dc, int hc, int decode, int sd) {
+void ICM7218::send_control(byte dc, byte hc, byte decode, byte sd, byte bs, byte addr) {
   // Setup control word bits
   if (d7_out != NO_PIN) digitalWrite(d7_out, dc);       // DATA_COMING
   if (d6_out != NO_PIN) digitalWrite(d6_out, hc);       // HEXA (1) / CODEB (0)
   if (d5_out != NO_PIN) digitalWrite(d5_out, decode);   // /DECODE
   if (d4_out != NO_PIN) digitalWrite(d4_out, sd);       // /SHUTDOWN
+  digitalWrite(d3_out, bs);  // Don't care for ICM7218, RAM bank select for ICM7228
+  digitalWrite(d2_out, addr & 0x04);
+  digitalWrite(d1_out, addr & 0x02);
+  digitalWrite(d0_out, addr & 0x01); 
 
   // Latch in the bits
   digitalWrite(mode_out, HIGH);

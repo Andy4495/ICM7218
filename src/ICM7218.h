@@ -18,6 +18,8 @@
                                displayShutdown() and displayWakeup()
                                Moved segment_map out of class definition and
                                renamed to ICM7218_segment_map
+   1.3.0    08/24/2022  Andy4495 Add methods to simplify usage
+
 */
 #ifndef ICM7218_LIBRARY
 #define ICM7218_LIBRARY
@@ -34,27 +36,36 @@ public:
   enum CHAR_MODE {HEXA=1, CODEB=0, DIRECT=2};
   enum {NO_PIN=255};
   enum {DP = 128};
+  enum RAM_BANK {RAM_BANK_A = 1, RAM_BANK_B = 0};
   ICM7218(byte D0, byte D1, byte D2, byte D3, byte D4, byte D5, byte D6,
           byte D7, byte mode_pin, byte write_pin);
   void setMode(CHAR_MODE);
-  void print(const char*);
+  void print(const char* s);
+  void print(char c, byte pos);  // For use with ICM7228 Single Digit Update mode
+  void print();  // Sends data in display_array[] to the ICM7x18 chip
   void displayShutdown();
   void displayWakeup();
+  byte& operator [] (byte index);
+  byte operator [] (byte index) const;
+  void operator= (const char * s);
 #ifdef ICM7218_SEGMENT_MAP
-  void convertToSegments(char*);
-  char convertToSegments(char);
+  void convertToSegments(char* s);
+  char convertToSegments(char c);
+  void convertToSegments();
 #endif
 
 private:
   enum POWER_MODE {WAKEUP = 1, SHUTDOWN = 0};
   enum {NO_DATA_COMING = 0, DATA_COMING = 1};
+  enum {MAX_DIGITS = 8};
   byte d0_out, d1_out, d2_out, d3_out, d4_out, d5_out, d6_out, d7_out;
   byte mode_out;
   byte write_out;
-  int mode, decode_bit, hexa_codeb_bit;
-  int power_state;
+  byte display_array[MAX_DIGITS];
+  byte mode, decode_bit, hexa_codeb_bit, ram_bank_select;
+  byte power_state;
   void send_byte(byte b);
-  void send_control(int dc, int hc, int decode, int sd);
+  void send_control(byte dc, byte hc, byte decode, byte sd, byte bs = 0, byte addr = 0);
 };
 
 #ifdef ICM7218_SEGMENT_MAP
