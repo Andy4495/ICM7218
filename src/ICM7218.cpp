@@ -23,30 +23,36 @@
 #include "ICM7218.h"
 
 /* Constructor:
-      D0 - D3   : digital output data pins. D0 is least significant bit.
-      D4        : digital output data pin. Also used for /SHUTDOWN mode
-                  Use ICM7218::NO_PIN if pin is not connected to Arduino
-      D5        : digital output data pin. Also used for /DECODE mode
-                  Use ICM7218::NO_PIN if pin is not connected to Arduino
-      D6        : digital output data pin. Also used for HEX/CODEB select
-                  Use ICM7218::NO_PIN if pin is not connected to Arduino
-      D7        : digital output data pin. Also used for DATA COMING signal
-                  Use ICM7218::NO_PIN if pin is not connected to Arduino
-      mode_pin  : digital output pin for MODE signal
-      RF_pin    : digital output pin for /WRITE signal
+      ID0_pin - ID3_pin   : digital output data pins. D0 is least significant bit.
+                          : On the ICM7228, D3 is RAM bank select
+                                            D2-D0 are single digit update display position
+      ID4         : digital output data pin. Also used for /SHUTDOWN mode
+                    Use ICM7218::NO_PIN if pin is not connected to Arduino
+      ID5         : digital output data pin. Also used for /DECODE mode
+                    Use ICM7218::NO_PIN if pin is not connected to Arduino
+      ID6         : digital output data pin. Also used for HEX/CODEB select
+                    Use ICM7218::NO_PIN if pin is not connected to Arduino
+      ID7         : digital output data pin. Also used for DATA COMING signal
+                    Use ICM7218::NO_PIN if pin is not connected to Arduino
+      mode_pin    : digital output pin for MODE signal
+      write_pin   : digital output pin for /WRITE signal
+      chip_cd     : extra parameter to indicate C or D variant of chip; value does not matter
 */
-ICM7218::ICM7218(byte D0_pin, byte D1_pin, byte D2_pin, byte D3_pin,
-                      byte D4_pin, byte D5_pin, byte D6_pin, byte D7_pin,
-                      byte mode_pin, byte write_pin)
+
+// Constructor to use with the A or B variants of the chip.
+//   - 10 required parameters
+ICM7218::ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin,
+                 byte ID4_pin, byte ID5_pin, byte ID6_pin, byte ID7_pin,
+                 byte mode_pin, byte write_pin)
 {
-  d0_out =             D0_pin;
-  d1_out =             D1_pin;
-  d2_out =             D2_pin;
-  d3_out =             D3_pin;
-  d4_out =             D4_pin;         // /SHUTDOWN
-  d5_out =             D5_pin;         // /DECODE
-  d6_out =             D6_pin;         // HEXA (1) / CODEB (0)
-  d7_out =             D7_pin;         // DATA COMING
+  d0_out =             ID0_pin;
+  d1_out =             ID1_pin;
+  d2_out =             ID2_pin;
+  d3_out =             ID3_pin;
+  d4_out =             ID4_pin;        // /SHUTDOWN
+  d5_out =             ID5_pin;        // /DECODE
+  d6_out =             ID6_pin;        // HEXA (1) / CODEB (0)
+  d7_out =             ID7_pin;        // DATA COMING
   mode_out =           mode_pin;
   write_out =          write_pin;      // Active low
 
@@ -68,8 +74,47 @@ ICM7218::ICM7218(byte D0_pin, byte D1_pin, byte D2_pin, byte D3_pin,
   mode = CODEB;            // Default mode is CODEB decode until changed with setMode()
   power_state = WAKEUP;    // Default power state is active until changed with shutdown()
   ram_bank_select = RAM_BANK_A;   // Only useful on ICM7228
+  ab_or_cd = CHIP_AB;
+} // Constructor for A or B chip variant
 
-}
+// Constructor to use with the C or D variants of the chip
+// - 11 required parameters
+// - The final parameter "chip_cd" is required, but the value does not matter
+ICM7218::ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin, byte ID7_pin,
+                 byte DA0_pin, byte DA1_pin, byte DA2_pin, 
+                 byte mode_pin, byte write_pin, byte chip_cd) {
+  d0_out =             ID0_pin;
+  d1_out =             ID1_pin;
+  d2_out =             ID2_pin;
+  d3_out =             ID3_pin;
+  d4_out =             DA0_pin;        // Digit address lsb
+  d5_out =             DA1_pin;        // Digit address 
+  d6_out =             DA2_pin;        // Digit address msb
+  d7_out =             ID7_pin;        // Decimal point
+  mode_out =           mode_pin;       // HIGH = HEXA, Floating (input) = CODEB, LOW = SHUTDOWN
+  write_out =          write_pin;      // Active low
+  ab_or_cd =           CHIP_CD;
+
+  digitalWrite(write_out, HIGH);  // Make sure /WRITE signal is inactive
+  pinMode(write_out, OUTPUT);
+
+  // Data pin levels don't need to be set in constructor, since they are only
+  // latched by ICM7218B when the /WRITE signal is low.
+  pinMode(d0_out, OUTPUT);
+  pinMode(d1_out, OUTPUT);
+  pinMode(d2_out, OUTPUT);
+  pinMode(d3_out, OUTPUT);
+  if (d4_out != NO_PIN) pinMode(d4_out, OUTPUT);
+  if (d5_out != NO_PIN) pinMode(d5_out, OUTPUT);
+  if (d6_out != NO_PIN) pinMode(d6_out, OUTPUT);
+  if (d7_out != NO_PIN) pinMode(d7_out, OUTPUT);
+  pinMode(mode_out, INPUT);   // Default is CODEB (floating) with Display Enabled
+
+  mode = CODEB;            // Default mode is CODEB decode until changed with setMode()
+  power_state = WAKEUP;    // Default power state is active until changed with shutdown()
+  ram_bank_select = RAM_BANK_A;   // Only useful on ICM7228
+  ab_or_cd = CHIP_CD | (chip_cd & 0x01);  // Obfuscated code to avoid an "unused parameter" warning
+} // Constructor for C or D variant
 
 byte& ICM7218::operator [] (byte index) {
   if (index >= MAX_DIGITS) index = MAX_DIGITS - 1;
@@ -86,61 +131,83 @@ void ICM7218::operator= (const char * s) {
 }
 
 void ICM7218::setMode(CHAR_MODE m) {
-  switch (m) {
-    case HEXA:
-      decode_bit = 0;
-      hexa_codeb_bit = 1;
-      break;
-    case CODEB:
-      decode_bit = 0;
-      hexa_codeb_bit = 0;
-      break;
-    case DIRECT:
-      decode_bit = 1;
-      hexa_codeb_bit = 0;
-      break;
-    default:
-      decode_bit = 0;
-      hexa_codeb_bit = 0;
-      break;
+  if (ab_or_cd == CHIP_AB) {
+    switch (m) {
+      case HEXA:
+        decode_bit = 0;
+        hexa_codeb_bit = 1;
+        break;
+      case CODEB:
+        decode_bit = 0;
+        hexa_codeb_bit = 0;
+        break;
+      case DIRECT:
+        decode_bit = 1;
+        hexa_codeb_bit = 0;
+        break;
+      default:
+        decode_bit = 0;
+        hexa_codeb_bit = 0;
+        break;
+    }
+    // If current mode is DIRECT, and new mode is HEXA, then need to
+    // re-send DIRECT control word with HEXA bit to avoid CODEB flash on LEDs
+    if ( (mode == DIRECT) && (m == HEXA) )
+      send_control(NO_DATA_COMING, hexa_codeb_bit, 1, power_state);
   }
-  // If current mode is DIRECT, and new mode is HEXA, then need to
-  // re-send DIRECT control word with HEXA bit to avoid CODEB flash on LEDs
-  if ( (mode == DIRECT) && (m == HEXA) )
-    send_control(NO_DATA_COMING, hexa_codeb_bit, 1, power_state);
-
+  else {  // C or D chip variant. No control word; update MODE pin.
+    if (power_state == WAKEUP) {
+      switch (m) {
+        case HEXA: 
+          digitalWrite(mode_out, HIGH);
+          pinMode(mode_out, OUTPUT);
+          break;
+        case CODEB:  // floating
+        default:     // Default mode is CODEB
+          pinMode(mode_out, INPUT);
+          break;
+          break;
+      }
+    }
+  }
   mode = m;
+}
+
+void ICM7218::setBank(RAM_BANK bs) {
+  ram_bank_select = bs;
 }
 
 void ICM7218::print(const char* s) {
   byte outbuf[MAX_DIGITS + 1]; // Extra byte in case there is a leading decimal point (which does not get displayed)
   int index = MAX_DIGITS;
   int i = 0;
-
+  
+  // This method only works with the A and B variants of the chip
+  if (ab_or_cd == CHIP_AB) {
     switch (mode) {
       case HEXA:
         memset(outbuf, 0 | DP, MAX_DIGITS + 1); // Initialize to default characters (0)
         while (index > 0) {
           switch (s[i]) {
-              case '0': case '1': case '2': case '3':  case '4':
-              case '5': case '6': case '7': case '8':  case '9':
-                outbuf[--index] = (s[i] - '0' ) | DP;
-                break;
-              case 'A':  case 'B': case 'C': case 'D': case 'E': case 'F':
-                outbuf[--index] = (s[i] - 'A' + 10) | DP;
-                break;
-              case 'a':  case 'b': case 'c': case 'd': case 'e': case 'f':
-                outbuf[--index] = (s[i] - 'a' + 10) | DP;
-                break;
-              case '.':
-                outbuf[index] = outbuf[index] & ~DP;
-                break;
-              case '\0':      // End of string
-                index = 0;    // This will end the while loop
-                break;
-              default:        // Invalid character, use default character (0)
-                --index;
-                break;
+            case '0': case '1': case '2': case '3':  case '4':
+            case '5': case '6': case '7': case '8':  case '9':
+              outbuf[--index] = (s[i] - '0' ) | DP;
+              break;
+            case 'A':  case 'B': case 'C': case 'D': case 'E': case 'F':
+              outbuf[--index] = (s[i] - 'A' + 10) | DP;
+              break;
+            case 'a':  case 'b': case 'c': case 'd': case 'e': case 'f':
+              outbuf[--index] = (s[i] - 'a' + 10) | DP;
+              break;
+            case '.':
+              outbuf[index] = outbuf[index] & ~DP;
+              break;
+            case '\0':      // End of string
+              index = 0;    // This will end the while loop
+              break;
+            default:        // Invalid character, use default character (0)
+              --index;
+              break;
             }
           i++;
         }
@@ -148,10 +215,10 @@ void ICM7218::print(const char* s) {
         if (s[i] == '.') outbuf[index] = outbuf[index] & ~DP;
         break;
 
-    case CODEB:
-      memset(outbuf, 15 | DP, MAX_DIGITS + 1); // Initialize to default characters (<space>)
-      while (index > 0) {
-        switch (s[i]) {
+      case CODEB:
+        memset(outbuf, 15 | DP, MAX_DIGITS + 1); // Initialize to default characters (<space>)
+        while (index > 0) {
+          switch (s[i]) {
             case '0':  case '1': case '2': case '3': case '4':
             case '5':  case '6': case '7': case '8': case '9':
               outbuf[--index] = (s[i] - '0' ) | DP;
@@ -184,90 +251,55 @@ void ICM7218::print(const char* s) {
               --index;
               break;
           }
-        i++;
-      }
-      // Check for a trailing decimal point
-      if (s[i] == '.') outbuf[index] = outbuf[index] & ~DP;
-      break;
+          i++;
+        }
+        // Check for a trailing decimal point
+        if (s[i] == '.') outbuf[index] = outbuf[index] & ~DP;
+        break;
 
-    case DIRECT:
-      memset(outbuf, 0 | DP, MAX_DIGITS + 1); // Initialize to default characters (0)
-      for (i = 0; i < MAX_DIGITS; i++) {
-        // Previous versions of this library stopped when '\0' was detected
-        // However, '\0' is a valid value in DIRECT mode, so we should process it
-        // Since this is a read-only operation, going beyond end of array will
-        // not corrupt memory.
-        outbuf[MAX_DIGITS - 1 - i] = s[i];  // Flip the bytes around MSB<->LSB
-      }
-      break;
+      case DIRECT:
+        memset(outbuf, 0 | DP, MAX_DIGITS + 1); // Initialize to default characters (0)
+        for (i = 0; i < MAX_DIGITS; i++) {
+          // Previous versions of this library stopped when '\0' was detected
+          // However, '\0' is a valid value in DIRECT mode, so we should process it
+          // Since this is a read-only operation, going beyond end of array will
+          // not corrupt memory.
+          outbuf[MAX_DIGITS - 1 - i] = s[i];  // Flip the bytes around MSB<->LSB
+        }
+        break;
 
-    default: // Send all zeroes for invalid mode. THIS SHOULD NEVER HAPPEN!
-      for (i = 0; i < MAX_DIGITS; i++) 
-        outbuf[i] = 0;
-      break;
-  }
-  // Set the mode
-  send_control(DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
-  // Send the data
-  for (i = 0; i < MAX_DIGITS; i++) {
-    send_byte(outbuf[i]);
-    // Copy the data sent to display into the object's internal storage
-    display_array[MAX_DIGITS - i - 1] = outbuf[i];
+      default: // Send all zeroes for invalid mode. THIS SHOULD NEVER HAPPEN!
+        for (i = 0; i < MAX_DIGITS; i++) 
+          outbuf[i] = 0;
+        break;
+    }
+    // Set the mode
+    send_control(DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
+    // Send the data
+    for (i = 0; i < MAX_DIGITS; i++) {
+      send_byte(outbuf[i]);
+      // Copy the data sent to display into the object's internal storage
+      display_array[MAX_DIGITS - i - 1] = outbuf[i];
+    }
   }
 } // print(const char*)
 
 void ICM7218::print() {
   byte display_digit;
-  // Send control byte to start the transfer
-  send_control(DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
+  if (ab_or_cd == CHIP_AB) {
+    // Send control byte to start the transfer
+    send_control(DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
+  }
   // Send the data bytes in reverse order
   for (int i = MAX_DIGITS - 1; i >= 0 ; i--) {
     switch (mode) {
       case HEXA:
-        switch (display_array[i]) {
-          case '0': case '1': case '2': case '3':  case '4':
-          case '5': case '6': case '7': case '8':  case '9':
-            display_digit = (display_array[i] - '0' ) | DP;
-            break;
-          case 'A':  case 'B': case 'C': case 'D': case 'E': case 'F':
-            display_digit = (display_array[i] - 'A' + 10) | DP;
-            break;
-          case 'a':  case 'b': case 'c': case 'd': case 'e': case 'f':
-            display_digit = (display_array[i] - 'a' + 10) | DP;
-            break;
-          default:        // Invalid character, use default character (0)
-            display_digit = 0 | DP;
-            break;
-        }
+        display_digit = convertToHexa(display_array[i]);
+        display_digit |= ((dots<<i) & DP) ? 0 : DP;
         break; 
       case CODEB:
-        switch (display_array[i]) {
-          case '0':  case '1': case '2': case '3': case '4':
-          case '5':  case '6': case '7': case '8': case '9':
-            display_digit = (display_array[i] - '0' ) | DP;
-            break;
-          case 'E':  case 'e':
-            display_digit = 11 | DP;
-            break;
-          case 'H': case 'h':
-            display_digit = 12 | DP;
-            break;
-          case 'L': case 'l':
-            display_digit = 13 | DP;
-            break;
-          case 'P': case 'p':
-            display_digit = 14 | DP;
-            break;
-          case '-':
-            display_digit = 10 | DP;
-            break;
-          case ' ':
-            display_digit = 15 | DP;
-            break;
-          default:       // Invalid character printed as a blank
-            display_digit = 15 | DP;
-            break;
-        }
+        display_digit = convertToCodeB(display_array[i]);
+        display_digit |= ((dots<<i) & DP) ? 0 : DP;
         break;
       case DIRECT:
         display_digit = display_array[i];
@@ -276,29 +308,68 @@ void ICM7218::print() {
         display_digit = 0;
         break; 
     }
-    send_byte(display_digit);
+    if (ab_or_cd == CHIP_AB) {
+      send_byte(display_digit);
+    }
+    else { // C or D chip variants
+      send_byte(display_digit, MAX_DIGITS - i - 1);
+    }
   }
 }  // print()
 
-// For use with ICM7228 Single Digit Update mode
-void ICM7218::print(char c, byte pos) {
+// For use with ICM7228 A/B Single Digit Update mode or ICM7218 C, D, ICM7228C update mode
+// pos is the array position, not the DIGIT#. That is, pos = 0 refers to left-most digit
+void ICM7218::print(byte c, byte pos) {
   if (pos > MAX_DIGITS - 1) pos = MAX_DIGITS - 1;
-  send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state, ram_bank_select, pos);
-  send_byte(c);
-  display_array[pos] = c;
+    switch (mode) {
+      case HEXA:
+        c = convertToHexa(c);
+        c |= ((dots<<pos) & DP) ? 0 : DP;
+        break; 
+      case CODEB:
+        c = convertToCodeB(c);
+        c |= ((dots<<pos) & DP) ? 0 : DP;
+        break;
+      default: // Nothing to do for DIRECT mode
+        break; 
+    }  
+    if (ab_or_cd == CHIP_AB) {
+    send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state, MAX_DIGITS - pos - 1);
+    send_byte(c);
+  }
+  else { // C or D chip variants
+    send_byte(c, MAX_DIGITS - pos - 1);
+  }
 }  // print(char c, int pos)
 
 
 void ICM7218::displayShutdown() {
   power_state = SHUTDOWN;
-  // Send control word, no data coming, with /SHUTDOWN active
-  send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
+  if (ab_or_cd == CHIP_AB) {
+    // Send control word, no data coming, with /SHUTDOWN active
+    send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
+  }
+  else { // C or D chip variants
+    digitalWrite(mode_out, LOW);
+    pinMode(mode_out, OUTPUT);
+  }
 }
 
 void ICM7218::displayWakeup() {
   power_state = WAKEUP;
-  /// Send control word, no data coming, with /SHUTDOWN inactive
-  send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
+  if (ab_or_cd == CHIP_AB) {
+    /// Send control word, no data coming, with /SHUTDOWN inactive
+    send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
+  }
+  else { // C or D chip variants
+    if (mode == HEXA) {
+      digitalWrite(mode_out, HIGH);
+      pinMode(mode_out, OUTPUT);
+    }
+    else { // CODEB (floating)
+      pinMode(mode_out, INPUT);    
+    }
+  }
 }
 
 #ifdef ICM7218_SEGMENT_MAP
@@ -378,6 +449,7 @@ void ICM7218::convertToSegments() {
 }
 #endif
 
+// For use with A and B chip variants
 void ICM7218::send_byte(byte c) {
   // Change mode to DATA
   digitalWrite(mode_out, LOW);
@@ -397,13 +469,31 @@ void ICM7218::send_byte(byte c) {
   digitalWrite(write_out, HIGH);
 }
 
-void ICM7218::send_control(byte dc, byte hc, byte decode, byte sd, byte bs, byte addr) {
+// C and D variants write individual characters with 3 address bits
+void ICM7218::send_byte(byte c, byte pos) {
+
+  // Set output pins to data value
+  digitalWrite(d0_out,     c  & 0x01);
+  digitalWrite(d1_out, (c>>1) & 0x01);
+  digitalWrite(d2_out, (c>>2) & 0x01);
+  digitalWrite(d3_out, (c>>3) & 0x01);
+  if (d4_out != NO_PIN) digitalWrite(d4_out, pos & 0x04);  // DA2
+  if (d5_out != NO_PIN) digitalWrite(d5_out, pos & 0x02);  // DA1
+  if (d6_out != NO_PIN) digitalWrite(d6_out, pos & 0x01);  // DA0
+  if (d7_out != NO_PIN) digitalWrite(d7_out, (c & 0x80) ? 0 : 1);
+
+  // Latch in the data
+  digitalWrite(write_out, LOW);
+  digitalWrite(write_out, HIGH);
+}
+
+void ICM7218::send_control(byte dc, byte hc, byte decode, byte sd, byte addr) {
   // Setup control word bits
   if (d7_out != NO_PIN) digitalWrite(d7_out, dc);       // DATA_COMING
   if (d6_out != NO_PIN) digitalWrite(d6_out, hc);       // HEXA (1) / CODEB (0)
   if (d5_out != NO_PIN) digitalWrite(d5_out, decode);   // /DECODE
   if (d4_out != NO_PIN) digitalWrite(d4_out, sd);       // /SHUTDOWN
-  digitalWrite(d3_out, bs);  // Don't care for ICM7218, RAM bank select for ICM7228
+  digitalWrite(d3_out, ram_bank_select);  // Don't care for Intersil ICM7218, RAM bank select for ICM7228 and Maxim IMC7218
   digitalWrite(d2_out, addr & 0x04);
   digitalWrite(d1_out, addr & 0x02);
   digitalWrite(d0_out, addr & 0x01); 
@@ -412,4 +502,56 @@ void ICM7218::send_control(byte dc, byte hc, byte decode, byte sd, byte bs, byte
   digitalWrite(mode_out, HIGH);
   digitalWrite(write_out, LOW);    // Latch in the control bits
   digitalWrite(write_out, HIGH);
+}
+
+byte ICM7218::convertToCodeB(byte c) {
+  byte display_digit;
+  switch (c) {
+    case '0':  case '1': case '2': case '3': case '4':
+    case '5':  case '6': case '7': case '8': case '9':
+      display_digit = (c - '0' );
+      break;
+    case 'E':  case 'e':
+      display_digit = 11;
+      break;
+    case 'H': case 'h':
+      display_digit = 12;
+      break;
+    case 'L': case 'l':
+      display_digit = 13;
+      break;
+    case 'P': case 'p':
+      display_digit = 14;
+      break;
+    case '-':
+      display_digit = 10;
+      break;
+    case ' ':
+      display_digit = 15;
+      break;
+    default:       // Invalid character printed as a blank
+      display_digit = 15;
+      break;
+  }
+  return display_digit;
+}
+
+byte ICM7218::convertToHexa(byte c) {
+  byte display_digit;
+  switch (c) {
+    case '0': case '1': case '2': case '3':  case '4':
+    case '5': case '6': case '7': case '8':  case '9':
+      display_digit = (c - '0' );
+      break;
+    case 'A':  case 'B': case 'C': case 'D': case 'E': case 'F':
+      display_digit = (c - 'A' + 10);
+      break;
+    case 'a':  case 'b': case 'c': case 'd': case 'e': case 'f':
+      display_digit = (c - 'a' + 10);
+      break;
+    default:        // Invalid character, use default character (0)
+      display_digit = 0 | DP;
+      break;
+  }
+  return display_digit;
 }

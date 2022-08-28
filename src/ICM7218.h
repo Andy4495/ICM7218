@@ -37,11 +37,17 @@ public:
   enum {NO_PIN=255};
   enum {DP = 128};
   enum RAM_BANK {RAM_BANK_A = 1, RAM_BANK_B = 0};
-  ICM7218(byte D0, byte D1, byte D2, byte D3, byte D4, byte D5, byte D6,
-          byte D7, byte mode_pin, byte write_pin);
+  byte dots;  // Only used with HEXA and CODEB with internal display_array or single char update
+  ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin,
+          byte ID4_pin, byte ID5_pin, byte ID6_pin, byte ID7_pin,
+          byte mode_pin, byte write_pin);
+  ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin, byte ID7_pin,
+          byte DA0_pin, byte DA1_pin, byte DA2_pin, 
+          byte mode_pin, byte write_pin, byte chip_cd);
   void setMode(CHAR_MODE);
+  void setBank(RAM_BANK);
   void print(const char* s);
-  void print(char c, byte pos);  // For use with ICM7228 Single Digit Update mode
+  void print(byte c, byte pos);  // For use with ICM7228 Single Digit Update mode
   void print();  // Sends data in display_array[] to the ICM7x18 chip
   void displayShutdown();
   void displayWakeup();
@@ -58,14 +64,18 @@ private:
   enum POWER_MODE {WAKEUP = 1, SHUTDOWN = 0};
   enum {NO_DATA_COMING = 0, DATA_COMING = 1};
   enum {MAX_DIGITS = 8};
+  enum {CHIP_AB = 0, CHIP_CD = 1};
   byte d0_out, d1_out, d2_out, d3_out, d4_out, d5_out, d6_out, d7_out;
   byte mode_out;
   byte write_out;
   byte display_array[MAX_DIGITS];
-  byte mode, decode_bit, hexa_codeb_bit, ram_bank_select;
+  byte mode, decode_bit, hexa_codeb_bit, ram_bank_select, ab_or_cd;
   byte power_state;
   void send_byte(byte b);
-  void send_control(byte dc, byte hc, byte decode, byte sd, byte bs = 0, byte addr = 0);
+  void send_byte(byte c, byte pos);
+  void send_control(byte dc, byte hc, byte decode, byte sd, byte addr = 0);
+  byte convertToCodeB(byte c);
+  byte convertToHexa(byte c);
 };
 
 #ifdef ICM7218_SEGMENT_MAP
