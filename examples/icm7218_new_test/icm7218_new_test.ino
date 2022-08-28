@@ -54,7 +54,7 @@ void loop() {
         break;
 
       case 3: 
-        Serial.println("HEXA with digit points after 2nd and 5th character");
+        Serial.println("HEXA with decimal points after 2nd and 5th character");
         myLED.dots = 0x40 | 0x08; 
         myLED.print();
         myLED.dots = 0; 
@@ -79,7 +79,7 @@ void loop() {
         break;
 
       case 6:
-        Serial.println("CODEB with digit points after 3nd and 7th character");
+        Serial.println("CODEB with decimal points after 3nd and 7th character");
         myLED.dots = 0x20 | 0x02; 
         myLED.print();
         myLED.dots = 0; 
@@ -134,7 +134,7 @@ void loop() {
         break;
 
       case 11:
-        Serial.println("Single char update -- index 1 and 5 changed to 'c' and 'p'. Works on ICM7228 only.");
+        Serial.println("Single char update -- index 1 and 5 changed to 'c' and 'p'. Not supported on Intersil 7218A/B.");
         myLED.print(myLED.convertToSegments('c'), 1);
         myLED.print(myLED.convertToSegments('p'), 5);
         Serial.println("");

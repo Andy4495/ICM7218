@@ -8,7 +8,7 @@ This library is designed to interface with the Intersil/Renesas/Maxim ICM7218 an
 
 ## Quick Start
 
-The library has several easy to use methods to quickly get a sketch running with basic functionality, while providing an interface which can take advantage of all the chips features.
+The library has several easy to use methods to quickly get a sketch running with basic functionality, while providing an interface which can take advantage of all the chips' features.
 
 These examples demonstrate some common usage modes of the 72x8 chips. A complete description of the [public methods](#public-methods) supported by the library are further below. Be sure to also review the example sketches included with the library.
 
@@ -81,6 +81,9 @@ void setup() {
   myLED.dots = 0x08;  // Define a decimal point after the 5th digit 
   myLED.print(); // Display '12345.678'
 }
+
+void loop() {
+}
 ```
 
 ```cpp
@@ -91,8 +94,11 @@ void setup() {
   myLED.setMode(ICM7218::DIRECT);
   myLED = "12345678";
   myLED.convertToSegments();
-  myLED[4] = myLED[3] & 0x7F   // Add a decimal point after the 4th digit 
+  myLED[3] = myLED[3] & 0x7F;   // Add a decimal point after the 4th digit 
   myLED.print(); // Display '1234.5678'
+}
+
+void loop() {
 }
 ```
 
@@ -194,13 +200,13 @@ Constructor for the A or B versions of the chip. Parameters are the pin numbers 
 
 - `ICM7218 myLED(ID0, ID1, ID2, ID3, ID4, ID5, ID6, ID7, mode, write, chip_cd)`
 
-Constructor for the C or D versions of the chip. Has one additional parameter, which can be any 8-bit value (this parameter is used to differentiate between the two constructures, but the actual value passed is not used by the library).
+Constructor for the C or D versions of the chip. Has one additional parameter, which can be any 8-bit value (this parameter is used to differentiate between the two constructors, but the actual value passed is not used by the library).
 
 - `void print(char* s)`
 
-Sends the null-terminated character string `s` to the LED display.
+Sends the character string `s` to the LED display.
 
-A maximum of 8 characters are printed (not including decimal points), regardless of the actual length of the string. In HEXA or CODEB mode, if the string is less than 8 characters in length, then the string is left-justified and right-padded with the relevant default character (space or zero). In DIRECT mode, 8 characters are always printed (meaning memory locations beyond the end of the string may be read).
+A maximum of 8 characters are printed (not including decimal points), regardless of the actual length of the string. In HEXA or CODEB mode, if the string is less than 8 characters in length, then the string is left-justified and right-padded with the relevant default character (space or zero). In DIRECT mode, 8 characters are always printed (meaning memory locations beyond the end of the string may be accessed).
 
 In HEXA or CODEB mode, either upper- or lower-case alpha characters may be used in the string and nvalid characters not supported by the current character mode are displayed with a default character: `'0'` (zero) in HEXA mode or `' '` (space) in CODEB mode.
 
@@ -216,7 +222,7 @@ Sends the single character `c` to the display at position `pos`. Display postion
 
 For HEXA and CODEB modes, this method uses the `.dots` data member to determine if a decimal point is displayed with the updated digit.
 
-For DIRECT mode, this is a bit-mapped segment value.
+For DIRECT mode, this is a bit-mapped segment value, including bit 7 representing the decimal point.
 
 This method has no effect on chips that do not support Single Digit Update mode.
 
