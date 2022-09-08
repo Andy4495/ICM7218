@@ -353,10 +353,9 @@ While the ICM7228 uses a 5V supply voltage, its data input lines are 3.3 V compa
 
 The software and other files in this repository are released under what is commonly called the [MIT License][100]. See the file [`LICENSE.txt`][101] in this repository.
 
-[2]: https://www.intersil.com/content/dam/Intersil/documents/icm7/icm7218.pdf
 [4]: https://www.renesas.com/us/en/document/dst/icm7218-datasheet
 [5]: https://www.renesas.com/us/en/document/dst/icm7228-datasheet
 [6]: https://datasheets.maximintegrated.com/en/ds/ICM7218-ICM7228.pdf
 [100]: https://choosealicense.com/licenses/mit/
 [101]: ./LICENSE.txt
-[200]: https://github.com/Andy4495/ICM7218
+[//]: # ([200]: https://github.com/Andy4495/ICM7218)
