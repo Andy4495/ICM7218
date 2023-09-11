@@ -17,15 +17,8 @@ on:
 
 jobs:
   markdown-link-check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: gaurav-nelson/github-action-markdown-link-check@v1
-      with:
-        base-branch: main
-        use-verbose-mode: yes
-    - name: Print the job summary
-      if: ${{ inputs.message }}
-      run: |
-        echo ${{ inputs.message }} >>$GITHUB_STEP_SUMMARY
+    name: call-markdown-link-check-workflow
+    uses: Andy4495/.github/.github/workflows/CheckMarkdownLinks.yml@main         
+    with:
+      message: ${{ inputs.message }}
             
