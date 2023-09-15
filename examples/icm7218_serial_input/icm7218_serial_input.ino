@@ -37,8 +37,8 @@ ICM7218 myLED(16, 3, 4, 5, 6, 7, 8, 9, 14, 15);
 #define BUTTON2 11
 
 // how much serial data we expect before a newline
-const unsigned int MAX_INPUT = 50;
-char input_line [MAX_INPUT];
+const unsigned int _MAX_INPUT_ = 50;
+char input_line [_MAX_INPUT_];
 
 // For Cylon mode
 char convertBuffer[16];
@@ -216,7 +216,7 @@ void processIncomingByte (const byte inByte)
 
     default:
       // keep adding if not full ... allow for terminating null byte
-      if (input_pos < (MAX_INPUT - 1)) {
+      if (input_pos < (_MAX_INPUT_ - 1)) {
         input_line [input_pos++] = inByte;
       }
       break;
