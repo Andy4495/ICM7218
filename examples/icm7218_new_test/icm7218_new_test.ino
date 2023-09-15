@@ -9,8 +9,9 @@
 #include "ICM7218.h"
 
 // Constructor: Confirm/update these pin numbers match your Arduino->ICM7x28 connection
-// myLED(ID0, ID1, ID2, ID3, ID4, ID5, ID6, ID7, mode, write)
-ICM7218 myLED(A2, 3, 4, 5, 6, 7, 8, 9, A0, A1); // Update per your configuration
+// Note that on ATmega328: 17=A3, 16=A2, 15=A1, 14=A0
+//      myLED(ID0, ID1, ID2, ID3, ID4, ID5, ID6, ID7, mode, write)
+ICM7218 myLED(17,    3,   4,   5,   6,   7,   8,   9,   14,   15); // Update per your configuration
 
 #define TEST_DELAY 3000UL
 unsigned long prevMillis;
