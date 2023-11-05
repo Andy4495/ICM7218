@@ -120,7 +120,7 @@ If using a display with fewer than 8 digits, I would recommend "left-justifying"
 
 Handling the decimal points in displays is a little  complicated. Configuring the decimal points depends on how you are using the display.
 
-#### With `print(char* s)`
+#### With `print(char* s)` (only works with A or B variants of the chip)
 
 This method takes in a c-string of ASCII characters.
 
@@ -204,7 +204,7 @@ Constructor for the C or D versions of the chip. Has one additional parameter, w
 
 - `void print(char* s)`
 
-Sends the character string `s` to the LED display.
+Sends the character string `s` to the LED display. **This method only works with the A or B variants of the chips.**
 
 A maximum of 8 characters are printed (not including decimal points), regardless of the actual length of the string. In HEXA or CODEB mode, if the string is less than 8 characters in length, then the string is left-justified and right-padded with the relevant default character (space or zero). In DIRECT mode, 8 characters are always printed (meaning memory locations beyond the end of the string may be accessed).
 
@@ -268,6 +268,8 @@ The `ICM7218` class provides a simplified interface by using an internal charact
 
 ## Using Direct Mode
 
+DIRECT mode is only valid with A or B variants of the chip.
+
 DIRECT mode allows direct control of each of the LED segments as opposed to the HEXA or CODEB modes which convert a numeric value into a corresponding LED digit or letter.
 
 With DIRECT mode, each bit in the data byte directly corresponds to an LED segment or the decimal point. This mode is often used to control LED matrixes, but can also be used to display special characters and a range of alphabetic characters on a 7-segment display.
@@ -309,6 +311,8 @@ The ASCII to 7-segment mapping performed by `convertToSegments()` is shown in th
 
 ## Reducing Output Pin Usage
 
+### A and B variants
+
 It is possible to save up to four output pins by hardwiring some or all of the pins ID4 - ID7 high or low to hardcode the character/segment decode mode and shutdown mode.
 
 Keep in mind, however, that ID7 is used for the decimal point, so if it is tied high, then you won't be able access the decimal points in the LED display.
@@ -328,6 +332,12 @@ When invoking the constructor, use the value `ICM7218::NO_PIN` for any pins that
   ICM7218 myLED(2, 3, 4, 5, ICM7218::NO_PIN, ICM7218::NO_PIN,
                 ICM7218::NO_PIN, ICM7218::NO_PIN, 14, 15);
 ```
+
+### C or D variants
+
+The HEXA/CODEB/SHUTDOWN (mode) pin can be tied high or left floating to save a digital output pin. If tied high, then all digits will be displayed using HEXA decoding. If left floating, then all digits will be displayed using CODEB decoding.
+
+When invoking the constructor, use the value `ICM7218::NO_PIN` for the `mode_pin` parameter.
 
 ## Reducing RAM Usage
 
