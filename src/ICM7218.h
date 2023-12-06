@@ -19,7 +19,7 @@
                                Moved segment_map out of class definition and
                                renamed to ICM7218_segment_map
    1.3.0    08/24/2022  Andy4495 Add methods to simplify usage
-
+   1.3.2    05-Dec-2023 Andy4495 Fix issues with C/D variants
 */
 #ifndef ICM7218_LIBRARY
 #define ICM7218_LIBRARY

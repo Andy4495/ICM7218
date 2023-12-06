@@ -4,7 +4,7 @@
 [![Check Markdown Links](https://github.com/Andy4495/ICM7218/actions/workflows/CheckMarkdownLinks.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/CheckMarkdownLinks.yml)
 [![Arduino Lint](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-lint.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-lint.yml)
 
-This library is designed to interface with the Intersil/Renesas/Maxim ICM7218 and ICM7228 LED driver chips. This library should work with any of the variants (A, B, C, D) of the chips, although it has only been tested on the Intersil ICM7218B and ICM7228B chips.
+This library is designed to interface with the Intersil/Renesas/Maxim ICM7218 and ICM7228 LED driver chips. This library should work with any of the variants (A, B, C, D) of the chips, although it has only been tested on the B and D (common cathode) variants.
 
 ## Quick Start
 
@@ -142,7 +142,7 @@ myLED.convertToSegments(buffer);
 myLED.print()
 ```
 
-#### With `print()` (no argument version)
+#### With `print()` (no argument version; works with all variants of chip)
 
 This method uses an internal class array to control the display digits (accessed with the array operator `[]` and the assignment operator `=`).
 
@@ -151,7 +151,7 @@ To turn on decimal points when using HEXA or CODEB modes, use the `.dots` data m
 ```cpp
 myLED.setMode(ICM7218::HEXA);   // Or myLED.setMode(ICM7218::CODEB)
 myLED = "12345678";
-myLED.dots = 0x80;     // Turn on the first (left-most) decimal point
+myLED.dots = 0x80;     // Turn on decimal point on the most significant (left-most) digit
 myLED.print();         // Displays "1.2345678"
 ```
 
@@ -198,9 +198,9 @@ myLED.print(c, 4); // Displays "123.40678
 
 Constructor for the A or B versions of the chip. Parameters are the pin numbers for ID0 through ID7, plus the mode and write pins.
 
-- `ICM7218 myLED(ID0, ID1, ID2, ID3, ID4, ID5, ID6, ID7, mode, write, chip_cd)`
+- `ICM7218 myLED(ID0, ID1, ID2, ID3, ID7, DA0, DA1, DA2, mode, write, chip_cd)`
 
-Constructor for the C or D versions of the chip. Has one additional parameter, which can be any 8-bit value (this parameter is used to differentiate between the two constructors, but the actual value passed is not used by the library).
+Constructor for the C or D versions of the chip. Has one additional parameter, which can be any 8-bit value (this parameter is used to differentiate between the two constructors, but the actual value passed does not matter to the library).
 
 - `void print(char* s)`
 
@@ -352,6 +352,16 @@ When using HEXA or CODEB decoding exclusively, it is possible to save 192 bytes 
 Beginning with version 1.3.0 of the library, Single Digit Update mode and RAM bank selection is supported (MAXIM ICM7218A/B/C/D and Intersil/Renesas ICM7218C/D and ICM7228A/B/C).
 
 While the ICM7228 uses a 5V supply voltage, its data input lines are 3.3 V compatible. This means that it is possible to interface the ICM7228 with 3.3 V devices including MSP430 and 3.3V Arduino controllers without the need for level shifters.
+
+The C and D variants of the chip combine the decode mode and wakeup/shutdown mode selection onto a single pin by using a three-state input:
+
+| Pin 9 Level | Decode Mode | Power Mode |
+| ----------- | ----------- | ---------- |
+| High        | HEXA        | Wakeup     |
+| Floating    | CODEB       | Wakeup     |
+| Low         | N/A         | Shutdown   |
+
+Because of the special configuration of this pin, a high level is represented by at least 4.2 V (other digital pins only need a minimum of 2 V to indicate a high level). This means that a 3.3 V microcontroller cannot configure the chip to use HEXA decoding without additional circuitry or externally pulling pin 9 to +5 V.
 
 ## References
 

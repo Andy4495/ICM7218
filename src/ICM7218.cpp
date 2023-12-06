@@ -18,6 +18,7 @@
                                displayShutdown() and displayWakeup()
                                Renamed segment_map to ICM7218_segment_map
    1.3.0    08/24/2022  Andy4495 Add methods to simplify usage
+   1.3.2    05-Dec-2023 Andy4495 Fix issues with C/D variants
 */
 
 #include "ICM7218.h"
@@ -494,11 +495,10 @@ void ICM7218::send_byte(byte c, byte pos) {
   digitalWrite(d1_out, (c>>1) & 0x01);
   digitalWrite(d2_out, (c>>2) & 0x01);
   digitalWrite(d3_out, (c>>3) & 0x01);
-  // For address pins, need to flip the bit because library addresses left to right
-  digitalWrite(d4_out, (pos & 0x01) ? 0 : 1);  // DA0
-  digitalWrite(d5_out, (pos & 0x02) ? 0 : 1);  // DA1
-  digitalWrite(d6_out, (pos & 0x04) ? 0 : 1);  // DA2
-  digitalWrite(d7_out, (c & 0x80) ? 0 : 1);
+  digitalWrite(d4_out, (pos & 0x01) ? 1 : 0);  // DA0
+  digitalWrite(d5_out, (pos & 0x02) ? 1 : 0);  // DA1
+  digitalWrite(d6_out, (pos & 0x04) ? 1 : 0);  // DA2
+  digitalWrite(d7_out, (  c & 0x80) ? 1 : 0);  // Decimal point
 
   // Latch in the data
   digitalWrite(write_out, LOW);

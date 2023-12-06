@@ -1,6 +1,8 @@
 // Example sketch for ICM7218 library
 // https://github.com/Andy4495/ICM7218
 //
+// Works best with A/B variants since C/D don't support DIRECT mode.
+//
 // 1.0.0    02/27/2018  A.T.   Original
 // 1.1.0    03/01/2018  A.T.   Add ASCII to segment mapping in DIRECT mode
 // 1.2.0    08/07/2018  A.T.   Raname display() and wakeup() methods
