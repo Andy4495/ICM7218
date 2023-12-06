@@ -18,29 +18,25 @@
                                displayShutdown() and displayWakeup()
                                Renamed segment_map to ICM7218_segment_map
    1.3.0    08/24/2022  Andy4495 Add methods to simplify usage
+   1.3.2    05-Dec-2023 Andy4495 Fix issues with C/D variants
 */
 
 #include "ICM7218.h"
 
-/* Constructor:
-      ID0_pin - ID3_pin   : digital output data pins. D0 is least significant bit.
-                          : On the ICM7228, D3 is RAM bank select
-                                            D2-D0 are single digit update display position
-      ID4         : digital output data pin. Also used for /SHUTDOWN mode
-                    Use ICM7218::NO_PIN if pin is not connected to Arduino
-      ID5         : digital output data pin. Also used for /DECODE mode
-                    Use ICM7218::NO_PIN if pin is not connected to Arduino
-      ID6         : digital output data pin. Also used for HEX/CODEB select
-                    Use ICM7218::NO_PIN if pin is not connected to Arduino
-      ID7         : digital output data pin. Also used for DATA COMING signal
-                    Use ICM7218::NO_PIN if pin is not connected to Arduino
-      mode_pin    : digital output pin for MODE signal
-      write_pin   : digital output pin for /WRITE signal
-      chip_cd     : extra parameter to indicate C or D variant of chip; value does not matter
+/* Constructor to use with the A or B variants of the chip.
+   Ten required parameters:
+     ID0_pin - ID3_pin : digital output data pins. D0 is least significant bit.
+     ID4               : digital output data pin. Also used for /SHUTDOWN mode
+                         Use ICM7218::NO_PIN if pin is not connected to Arduino
+     ID5               : digital output data pin. Also used for /DECODE mode
+                         Use ICM7218::NO_PIN if pin is not connected to Arduino
+     ID6               : digital output data pin. Also used for HEX/CODEB select
+                         Use ICM7218::NO_PIN if pin is not connected to Arduino
+     ID7               : digital output data pin. Also used for DATA COMING signal
+                         Use ICM7218::NO_PIN if pin is not connected to Arduino
+     mode_pin          : digital output pin for MODE signal
+     write_pin         : digital output pin for /WRITE signal
 */
-
-// Constructor to use with the A or B variants of the chip.
-//   - 10 required parameters
 ICM7218::ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin,
                  byte ID4_pin, byte ID5_pin, byte ID6_pin, byte ID7_pin,
                  byte mode_pin, byte write_pin)
@@ -77,9 +73,16 @@ ICM7218::ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin,
   ab_or_cd = CHIP_AB;
 } // Constructor for A or B chip variant
 
-// Constructor to use with the C or D variants of the chip
-// - 11 required parameters
-// - The final parameter "chip_cd" is required, but the value does not matter
+/* Constructor to use with the C or D variants of the chip
+   Eleven required parameters:
+     ID0_pin - ID3_pin : digital output data pins. ID0 is least significant bit
+     ID7_pin           : decimal point data, active low
+     DA0_pin - DA2_pin : digit address pins. DA0 is least significant bit
+     mode_pin          : digital output pin for HEXA/CODEB/SHUTDOWN signal
+                         Use ICM7218::NO_PIN if pin is not connected to Arduino
+     write_pin         : digital output pin for /WRITE signal
+     chip_cd           : indicates that this is C or D variant of chip; the value does not matter
+*/
 ICM7218::ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin, byte ID7_pin,
                  byte DA0_pin, byte DA1_pin, byte DA2_pin, 
                  byte mode_pin, byte write_pin, byte chip_cd) {
@@ -108,12 +111,15 @@ ICM7218::ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin, byte ID
   if (d5_out != NO_PIN) pinMode(d5_out, OUTPUT);
   if (d6_out != NO_PIN) pinMode(d6_out, OUTPUT);
   if (d7_out != NO_PIN) pinMode(d7_out, OUTPUT);
-  pinMode(mode_out, INPUT);   // Default is CODEB (floating) with Display Enabled
+  if (mode_out != NO_PIN) {
+    digitalWrite(mode_out, LOW);  // Make sure no pullup connected
+    pinMode(mode_out, INPUT);   // Default is CODEB (floating) with Display Enabled
+  }
 
   mode = CODEB;            // Default mode is CODEB decode until changed with setMode()
   power_state = WAKEUP;    // Default power state is active until changed with shutdown()
   ram_bank_select = RAM_BANK_A;   // Only useful on ICM7228
-  ab_or_cd = CHIP_CD | (chip_cd & 0x01);  // Obfuscated code to avoid an "unused parameter" warning
+  ab_or_cd = CHIP_CD | (chip_cd & 0x01);  // Obfuscated code to avoid an "unused parameter" warning from compiler
 } // Constructor for C or D variant
 
 byte& ICM7218::operator [] (byte index) {
@@ -159,13 +165,17 @@ void ICM7218::setMode(CHAR_MODE m) {
     if (power_state == WAKEUP) {
       switch (m) {
         case HEXA: 
-          digitalWrite(mode_out, HIGH);
-          pinMode(mode_out, OUTPUT);
+          if (mode_out != NO_PIN) {
+            digitalWrite(mode_out, HIGH);
+            pinMode(mode_out, OUTPUT);
+          }
           break;
         case CODEB:  // floating
         default:     // Default mode is CODEB
-          pinMode(mode_out, INPUT);
-          break;
+          if (mode_out != NO_PIN) {
+            digitalWrite(mode_out, LOW);
+            pinMode(mode_out, INPUT);
+          }
           break;
       }
     }
@@ -177,6 +187,7 @@ void ICM7218::setBank(RAM_BANK bs) {
   ram_bank_select = bs;
 }
 
+// This method only works with the A and B variants of the chip
 void ICM7218::print(const char* s) {
   byte outbuf[MAX_DIGITS + 1]; // Extra byte in case there is a leading decimal point (which does not get displayed)
   int index = MAX_DIGITS;
@@ -321,19 +332,19 @@ void ICM7218::print() {
 // pos is the array position, not the DIGIT#. That is, pos = 0 refers to left-most digit
 void ICM7218::print(byte c, byte pos) {
   if (pos > MAX_DIGITS - 1) pos = MAX_DIGITS - 1;
-    switch (mode) {
-      case HEXA:
-        c = convertToHexa(c);
-        c |= ((dots<<pos) & DP) ? 0 : DP;
-        break; 
-      case CODEB:
-        c = convertToCodeB(c);
-        c |= ((dots<<pos) & DP) ? 0 : DP;
-        break;
-      default: // Nothing to do for DIRECT mode
-        break; 
-    }  
-    if (ab_or_cd == CHIP_AB) {
+  switch (mode) {
+    case HEXA:
+      c = convertToHexa(c);
+      c |= ((dots<<pos) & DP) ? 0 : DP;
+      break; 
+    case CODEB:
+      c = convertToCodeB(c);
+      c |= ((dots<<pos) & DP) ? 0 : DP;
+      break;
+    default: // Nothing to do for DIRECT mode
+      break; 
+  }  
+  if (ab_or_cd == CHIP_AB) {
     send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state, MAX_DIGITS - pos - 1);
     send_byte(c);
   }
@@ -350,8 +361,10 @@ void ICM7218::displayShutdown() {
     send_control(NO_DATA_COMING, hexa_codeb_bit, decode_bit, power_state);
   }
   else { // C or D chip variants
-    digitalWrite(mode_out, LOW);
-    pinMode(mode_out, OUTPUT);
+    if (mode_out != NO_PIN) {
+      digitalWrite(mode_out, LOW);
+      pinMode(mode_out, OUTPUT);
+    }
   }
 }
 
@@ -363,11 +376,16 @@ void ICM7218::displayWakeup() {
   }
   else { // C or D chip variants
     if (mode == HEXA) {
-      digitalWrite(mode_out, HIGH);
-      pinMode(mode_out, OUTPUT);
+      if (mode_out != NO_PIN) {
+        digitalWrite(mode_out, HIGH);
+        pinMode(mode_out, OUTPUT);
+      }
     }
     else { // CODEB (floating)
-      pinMode(mode_out, INPUT);    
+      if (mode_out != NO_PIN) {
+        digitalWrite(mode_out, LOW);
+        pinMode(mode_out, INPUT);    
+      }
     }
   }
 }
@@ -477,10 +495,10 @@ void ICM7218::send_byte(byte c, byte pos) {
   digitalWrite(d1_out, (c>>1) & 0x01);
   digitalWrite(d2_out, (c>>2) & 0x01);
   digitalWrite(d3_out, (c>>3) & 0x01);
-  if (d4_out != NO_PIN) digitalWrite(d4_out, pos & 0x04);  // DA2
-  if (d5_out != NO_PIN) digitalWrite(d5_out, pos & 0x02);  // DA1
-  if (d6_out != NO_PIN) digitalWrite(d6_out, pos & 0x01);  // DA0
-  if (d7_out != NO_PIN) digitalWrite(d7_out, (c & 0x80) ? 0 : 1);
+  digitalWrite(d4_out, (pos & 0x01) ? 1 : 0);  // DA0
+  digitalWrite(d5_out, (pos & 0x02) ? 1 : 0);  // DA1
+  digitalWrite(d6_out, (pos & 0x04) ? 1 : 0);  // DA2
+  digitalWrite(d7_out, (  c & 0x80) ? 1 : 0);  // Decimal point
 
   // Latch in the data
   digitalWrite(write_out, LOW);

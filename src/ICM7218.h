@@ -19,7 +19,7 @@
                                Moved segment_map out of class definition and
                                renamed to ICM7218_segment_map
    1.3.0    08/24/2022  Andy4495 Add methods to simplify usage
-
+   1.3.2    05-Dec-2023 Andy4495 Fix issues with C/D variants
 */
 #ifndef ICM7218_LIBRARY
 #define ICM7218_LIBRARY
@@ -38,9 +38,11 @@ public:
   enum {DP = 128};
   enum RAM_BANK {RAM_BANK_A = 1, RAM_BANK_B = 0};
   byte dots;  // Only used with HEXA and CODEB with internal display_array or single char update
+// Constructor to use with the A or B variants of the chip.
   ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin,
           byte ID4_pin, byte ID5_pin, byte ID6_pin, byte ID7_pin,
           byte mode_pin, byte write_pin);
+// Constructor to use with the C or D variants of the chip.
   ICM7218(byte ID0_pin, byte ID1_pin, byte ID2_pin, byte ID3_pin, byte ID7_pin,
           byte DA0_pin, byte DA1_pin, byte DA2_pin, 
           byte mode_pin, byte write_pin, byte chip_cd);

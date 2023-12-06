@@ -1,8 +1,10 @@
 // Example sketch for ICM7218 library
 // https://github.com/Andy4495/ICM7218
 //
+// Works best with A/B variants since C/D don't support DIRECT mode.
+//
 // This sketch uses the new, simplified methods
-// added in version 2.0.0 of the library
+// added in version 1.3.0 of the library
 //
 // 1.0.0    08/25/2022 Andy4495 Initial version
 
@@ -65,7 +67,7 @@ void loop() {
       // CODEB decoding examples
       case 4:
         myLED.setMode(ICM7218::CODEB);
-        Serial.println("CODEB decodee: 45670123");
+        Serial.println("CODEB decode: 45670123");
         myLED = "45670123";
         myLED.print();
         prevMillis = millis();
@@ -73,14 +75,14 @@ void loop() {
 
       case 5:
         myLED.setMode(ICM7218::CODEB);
-        Serial.println("CODEB decodee: HELP-89");
+        Serial.println("CODEB decode: HELP-89");
         myLED = "HELP-89";
         myLED.print();
         prevMillis = millis();
         break;
 
       case 6:
-        Serial.println("CODEB with decimal points after 3nd and 7th character");
+        Serial.println("CODEB with decimal points after 3rd and 7th character");
         myLED.dots = 0x20 | 0x02; 
         myLED.print();
         myLED.dots = 0; 
