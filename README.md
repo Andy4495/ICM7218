@@ -1,7 +1,7 @@
 # ICM7218 Library
 
 [![Arduino Compile Sketches](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-compile-sketches.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-compile-sketches.yml)
-[![Check Markdown Links](https://github.com/Andy4495/ICM7218/actions/workflows/CheckMarkdownLinks.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/CheckMarkdownLinks.yml)
+[![Check Markdown Links](https://github.com/Andy4495/ICM7218/actions/workflows/check-links.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/check-links.yml)
 [![Arduino Lint](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-lint.yml/badge.svg)](https://github.com/Andy4495/ICM7218/actions/workflows/arduino-lint.yml)
 
 This library is designed to interface with the Intersil/Renesas/Maxim ICM7218 and ICM7228 LED driver chips. This library should work with any of the variants (A, B, C, D) of the chips, although it has only been tested on the B and D (common cathode) variants.
