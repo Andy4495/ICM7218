@@ -367,7 +367,7 @@ Because of the special configuration of this pin, a high level is represented by
 
 - Intersil/Renesas [ICM7218 datasheet][4]
 - Intersil/Renesas [ICM7228 datasheet][5]
-- Maxim [ICM7218 datasheet][6]
+- Maxim [ICM7218 datasheet][6] ([archived version][9])
 - Alternate [library][7] specifically for ICM7218C chip by GitHub user [tttmmmsss][8]
 
 ## License
@@ -379,6 +379,7 @@ The software and other files in this repository are released under what is commo
 [6]: https://www.analog.com/media/en/technical-documentation/data-sheets/ICM7218-ICM7228.pdf
 [7]: https://github.com/tttmmmsss/ICM7218C
 [8]: https://github.com/tttmmmsss
+[9]: ./extras/datasheets/ICM7218-ICM7228-Maxim.pdf
 [100]: https://choosealicense.com/licenses/mit/
 [101]: ./LICENSE.txt
 [//]: # ([200]: https://github.com/Andy4495/ICM7218)
